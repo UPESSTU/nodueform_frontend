@@ -6,6 +6,8 @@ import Profile from "./Page/Profile/Profile";
 import NoDueForm from "./Page/No_Due_Form.jsx/NoDueForm";
 import StatusPage from "./Page/Status/Status";
 import Update from "./Page/Update/Update";
+import AdminDashboard from "./Admin/Dashboard/Dashboard";
+import StudentDetails from "./Admin/Students/Students";
 // import Dashboard from "./pages/Dashboard"; // Example, create this page similarly
 // import ForgotPassword from "./pages/ForgotPassword"; // Example, create this page similarly
 
@@ -22,6 +24,15 @@ function App() {
           <Route path="/update-profile" element={<Update />} />
           
           {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
+          {/* Add more routes as needed */}
+
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/student-details" element={<StudentDetails />} />
+          {/* <Route path="/admin/profile" element={<AdminProfile />} /> */}
+          {/* <Route path="/admin/form" element={<AdminNoDueForm />} /> */}
+          {/* <Route path="/admin/status" element={<AdminStatusPage />} /> */}
+          {/* <Route path="/admin/update-profile" element={<AdminUpdate />} /> */}
           {/* Add more routes as needed */}
         </Routes>
       </div>
