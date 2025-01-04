@@ -10,7 +10,6 @@ const getToken = () => {
   if (user) {
     const parsedUser = JSON.parse(user);
     token = parsedUser.token; // Update the outer `token` variable
-    console.log("Token:", token);
   } else {
     console.log("User not found in localStorage");
   }
@@ -57,7 +56,26 @@ export const getDues = async () => {
         return error.response;
     }
     }
-    
+    //get due by id
+
+    export const getDueById = async (id) => {
+        try {
+            // Retrieve and parse the user from localStorage
+        
+            // Make the API call with the token
+            const res = await axios.get(`${API}/due/due/${id}`, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+            },
+            });
+        
+            return res;
+        } catch (error) {
+            console.error("Error during API call:", error.response || error.message);
+            return error.response;
+        }
+        }
+        
 
   // get all documents 
 
@@ -67,6 +85,46 @@ export const getDues = async () => {
     
         // Make the API call with the token
         const res = await axios.get(`${API}/document/documents`, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`,
+        },
+        });
+    
+        return res;
+    } catch (error) {
+        console.error("Error during API call:", error.response || error.message);
+        return error.response;
+    }
+    }
+
+// getFiles
+
+export const getFiles = async (id) => {
+    try {
+        // Retrieve and parse the user from localStorage
+    
+        // Make the API call with the token
+        const res = await axios.get(`${API}/file/file/${id}`, {
+        headers: {
+            Authorization: `Bearer ${getToken()}`,
+        },
+        });
+    
+        return res;
+    } catch (error) {
+        console.error("Error during API call:", error.response || error.message);
+        return error.response;
+    }
+    }
+
+// get getDocumentsById
+
+export const getDocumentsById = async (id) => {
+    try {
+        // Retrieve and parse the user from localStorage
+    
+        // Make the API call with the token
+        const res = await axios.get(`${API}/document/document/${id}`, {
         headers: {
             Authorization: `Bearer ${getToken()}`,
         },
