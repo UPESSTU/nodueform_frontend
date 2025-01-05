@@ -8,6 +8,7 @@ import {
   getDueById,
   getDues,
   getFiles,
+  updateDue,
 } from "../../Backend/AdminHelper";
 import AdminBase from "../Component/AdminBase";
 
@@ -85,6 +86,7 @@ const StudentDetails = () => {
   const [documents, setDocuments] = useState([]);
   const [departmentSchema, setDepartmentSchema] = useState({});
   const [columns, setColumns] = useState([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false); // Track unsaved changes
 
   const openDocumentsModal = (docs) => {
     console.log("Opening documents modal with:", docs);
@@ -218,58 +220,98 @@ const StudentDetails = () => {
       console.error("Failed to fetch documents or files:", err);
     }
   };
-const handleRemarkChange = (rowId, newRemark) => {
-  console.log(`Remark updated for row ${rowId}:`, newRemark);
-  // Implement logic to update the remark in the backend or state
-};
 
-const handleStatusChange = (rowId, newStatus) => {
-  console.log(`Status updated for row ${rowId}:`, newStatus);
-  // Implement logic to update the status in the backend or state
-};
+  const handleRemarkChange = (sapId, field, value) => {
+    setRows((prevData) =>
+      prevData.map((item) =>
+        item.sapId === sapId ? { ...item, [field]: value } : item
+      )
+    );
+    setHasUnsavedChanges(true); // Mark changes as unsaved
+  };
 
-useEffect(() => {
-  getDocuments().then(async (data) => {
-    if (data?.data?.dbRes?.docs) {
-      const formattedRows = await Promise.all(
-        data.data.dbRes.docs.map(async (document, index) => {
-          const dueData = await getDuesofIndividualStudent(
-            document.student._id
-          );
-          return {
-            id: `${document._id}-${index}`,
-            name: `${document.student.firstName} ${document.student.lastName}`,
-            studentId: document.student._id,
-            sapId: document.student.sapId,
-            batch: document.student.batch,
-            schoolName: document.student.schoolName,
-            programName: document.student.programName,
-            email: document.student.emailAddress,
-            createdAt: new Date(document.createdAt).toLocaleString(),
-            updatedAt: new Date(document.updatedAt).toLocaleString(),
-            remark: "", // Default remark value
-            status: "PENDING", // Default status value
-            ...dueData, // Add due data fields dynamically
-          };
-        })
-      );
+  const handleStatusChange = (sapId, field, value) => {
+    setRows((prevData) =>
+      prevData.map((item) =>
+        item.sapId === sapId ? { ...item, [field]: value } : item
+      )
+    );
+    setHasUnsavedChanges(true); // Mark changes as unsaved
+  };
 
-      setRows(formattedRows);
-      const columns = generateColumns(
-        formattedRows,
-        handleRemarkChange,
-        handleStatusChange
-      );
-      setColumns(columns);
-    } else {
-      console.error("Failed to fetch documents or invalid response format.");
-    }
-    setLoading(false);
-  });
-}, []);
+  const handleDueChange = (sapId, field, value) => {
+    setRows((prevData) =>
+      prevData.map((item) =>
+        item.sapId === sapId ? { ...item, [field]: value } : item
+      )
+    );
+    setHasUnsavedChanges(true); // Mark changes as unsaved
+  };
 
-  const generateColumns = (data, handleRemarkChange, handleStatusChange) => {
-    // Extract the field names from the first row of data (or you can use a template for specific fields)
+
+
+  const renderSaveButton = () => (
+    <div className="flex justify-end mt-4">
+      <button
+        onClick={saveChanges}
+        className={`p-2 rounded-md text-white ${
+          hasUnsavedChanges ? "bg-green-500" : "bg-gray-400 cursor-not-allowed"
+        }`}
+        disabled={!hasUnsavedChanges} // Disable button if no changes
+      >
+        Save Changes
+      </button>
+    </div>
+  );
+
+  useEffect(() => {
+    getDocuments().then(async (data) => {
+      if (data?.data?.dbRes?.docs) {
+        const formattedRows = await Promise.all(
+          data.data.dbRes.docs.map(async (document, index) => {
+            const dueData = await getDuesofIndividualStudent(
+              document.student._id
+            );
+            return {
+              id: `${document._id}-${index}`,
+              name: `${document.student.firstName} ${document.student.lastName}`,
+              studentId: document.student._id,
+              sapId: document.student.sapId,
+              batch: document.student.batch,
+              schoolName: document.student.schoolName,
+              programName: document.student.programName,
+              email: document.student.emailAddress,
+              createdAt: new Date(document.createdAt).toLocaleString(),
+              updatedAt: new Date(document.updatedAt).toLocaleString(),
+
+              ...dueData, // Add due data fields dynamically
+            };
+          })
+        );
+
+        setRows(formattedRows);
+        const columns = generateColumns(
+          formattedRows,
+          handleRemarkChange,
+          handleStatusChange,
+          handleDueChange
+        );
+        setColumns(columns);
+      } else {
+        console.error("Failed to fetch documents or invalid response format.");
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  const generateColumns = (
+    data,
+    handleRemarkChange,
+    handleStatusChange,
+    handleDueChange,
+    handleViewDocuments
+  ) => {
+    // Define static fields for student information
     const studentFields = [
       "name",
       "email",
@@ -281,74 +323,127 @@ useEffect(() => {
       "updatedAt",
     ];
 
-    // Extract the due fields dynamically (assuming dueData is an object with different properties)
+    // Extract dynamic due fields from data
     const dueFields = Object.keys(data[0] || {}).filter(
-      (key) => key !== "studentId" && key !== "id"
-    ); // Adjust based on actual data shape
+      (field) => !studentFields.includes(field)
+    );
 
-    // Combine studentFields and dueFields to form the column definitions
-    const dynamicColumns = [
-      ...studentFields.map((field) => ({
-        field: field,
-        headerName: field.charAt(0).toUpperCase() + field.slice(1), // Capitalize first letter for display
-        width: 200,
-      })),
-      ...dueFields.map((field) => ({
-        field: field,
-        headerName: field.charAt(0).toUpperCase() + field.slice(1), // Capitalize first letter for display
-        width: 200,
-      })),
-      {
-        field: "remark",
-        headerName: "Remark",
-        width: 300,
-        renderCell: (params) => (
-          <input
-            type="text"
-            defaultValue={params.row.remark || ""}
-            className="p-1 border rounded-md w-full"
-            onChange={(e) => handleRemarkChange(params.row.id, e.target.value)}
-            placeholder="Add remark"
-            aria-label="Add Remark"
-          />
-        ),
-      },
-      {
-        field: "status",
-        headerName: "Status",
-        width: 200,
-        renderCell: (params) => (
-          <select
-            defaultValue={params.row.status || "PENDING"}
-            className="p-1 border rounded-md w-full"
-            onChange={(e) => handleStatusChange(params.row.id, e.target.value)}
-            aria-label="Change Status"
-          >
-            <option value="PENDING">PENDING</option>
-            <option value="IN-REVIEW">IN-REVIEW</option>
-            <option value="SUCCESS">SUCCESS</option>
-            <option value="REJECTED">REJECTED</option>
-          </select>
-        ),
-      },
-      {
-        field: "documents",
-        headerName: "View Documents",
-        width: 200,
-        renderCell: (params) => (
-          <button
-            onClick={() => handleViewDocuments(params.row.studentId)}
-            className="bg-blue-500 text-white p-2 rounded-md"
-            aria-label="View Documents"
-          >
-            View Documents
-          </button>
-        ),
-      },
-    ];
+    // Generate column definitions for student fields
+    const staticColumns = studentFields.map((field) => ({
+      field: field,
+      headerName: field.charAt(0).toUpperCase() + field.slice(1), // Capitalize for display
+      width: 200,
+    }));
 
-    return dynamicColumns;
+    // Generate column definitions for due fields
+    const dynamicColumns = dueFields.map((field) => {
+      if (field.toLowerCase().includes("remark")) {
+        // Handle fields with 'remark' in their name
+        return {
+          field: field,
+          headerName: field.charAt(0).toUpperCase() + field.slice(1),
+          width: 200,
+          renderCell: (params) => (
+            <input
+              type="text"
+              value={params.row[field] || ""}
+              placeholder="Add Remark"
+              onChange={(e) =>
+                handleRemarkChange(params.row.sapId, field, e.target.value)
+              }
+              className="p-2 border border-gray-300 rounded-md"
+              aria-label={`Remark for ${field}`}
+            />
+          ),
+        };
+      }
+
+      if (field.toLowerCase().includes("status")) {
+        // Handle fields with 'status' in their name
+        return {
+          field: field,
+          headerName: field.charAt(0).toUpperCase() + field.slice(1),
+          width: 200,
+          renderCell: (params) => (
+            <select
+              value={params.row[field] || "PENDING"}
+              onChange={(e) =>
+                handleStatusChange(params.row.sapId, field, e.target.value)
+              }
+              className="p-2 border border-gray-300 rounded-md"
+              aria-label={`Status for ${field}`}
+            >
+              <option value="PENDING">Pending</option>
+              <option value="IN-REVIEW">In Review</option>
+              <option value="SUCCESS">Success</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          ),
+        };
+      }
+      if (field.toLowerCase().includes("due")) {
+        return {
+          field: field,
+          headerName: field.charAt(0).toUpperCase() + field.slice(1),
+          width: 200,
+          renderCell: (params) => (
+            <select
+              value={params.row[field] || "pending"}
+              onChange={(e) =>
+                handleDueChange(params.row.sapId, field, e.target.value)
+              }
+              className="p-2 border border-gray-300 rounded-md"
+              aria-label={`Status for ${field}`}
+            >
+              <option value="YES">YES</option>
+              <option value="NO">NO</option>
+            </select>
+          ),
+        };
+      }
+
+      // Default rendering for other fields
+      return {
+        field: field,
+        headerName: field.charAt(0).toUpperCase() + field.slice(1),
+        width: 200,
+      };
+    });
+
+    // Add custom column for viewing documents
+    const documentColumn = {
+      field: "documents",
+      headerName: "View Documents",
+      width: 200,
+      renderCell: (params) => (
+        <button
+          onClick={() => handleViewDocuments(params.row.sapId)}
+          className="bg-blue-500 text-white p-2 rounded-md"
+          aria-label="View Documents"
+        >
+          View Documents
+        </button>
+      ),
+    };
+
+    // Combine static, dynamic, and custom columns
+    return [...staticColumns, ...dynamicColumns, documentColumn];
   };
+    const saveChanges = async () => {
+      try {
+        const response = await updateDue(rows);
+        console.log("Update Due Response:", response);
+
+        if (response?.data?.dbRes) {
+          console.log("Successfully updated due data.");
+          setHasUnsavedChanges(false); // Reset unsaved changes
+        } else {
+          console.error("Failed to update due data.");
+        }
+      } catch (err) {
+        console.error("Error updating due data:", err);
+      }
+    };
 
   return (
     <AdminBase>
@@ -366,6 +461,7 @@ useEffect(() => {
         />
         {!loading && rows.length === 0 && <p>No data available.</p>}
       </div>
+      {renderSaveButton()}
 
       <DocumentsModal
         open={modalOpen}

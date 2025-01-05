@@ -136,3 +136,24 @@ export const getDocumentsById = async (id) => {
         return error.response;
     }
     }
+
+
+// update due
+
+export const updateDue = async (data) => {
+    try {
+        // Retrieve and parse the user from localStorage
+    
+        // Make the API call with the token
+        const res = await axios.put(`${API}/due/admin-due-update`, data, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        });
+    
+        return res;
+    } catch (error) {
+        console.error("Error during API call:", error.response || error.message);
+        return error.response;
+    }
+    }
