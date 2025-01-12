@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import InputField from "../../Component/InputField";
 import Base from "../../Component/Base";
-import { updateStudent } from "../../Backend/Helper";
-import { getUser } from "../../Backend/Helper";
-
+import { updateStudent, getUser } from "../../Backend/Helper";
+import AlertBox from "../../Component/AlertBox";
 const Update = () => {
   const [studentData, setStudentData] = useState({});
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [sapId, setSapId] = useState("");
@@ -16,6 +14,9 @@ const Update = () => {
   const [adhaarNumber, setAdhaarNumber] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [apaarId, setApaarId] = useState("");
+  const [loading, setLoading] = useState(false); // Track loading state
+  const [errorMessage, setErrorMessage] = useState(""); // Track error message
+  const [successMessage, setSuccessMessage] = useState(""); // Track success message
 
   useEffect(() => {
     getUser()
@@ -42,6 +43,7 @@ const Update = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true while submitting
     const user = {
       firstName,
       lastName,
@@ -54,17 +56,40 @@ const Update = () => {
       apaarId,
     };
 
+    // Check if any required fields are empty
+    if (
+      !firstName ||
+      !lastName ||
+      !sapId ||
+      !programName ||
+      !batch ||
+      !dateOfBirth ||
+      !adhaarNumber ||
+      !contactNumber ||
+      !apaarId
+    ) {
+      setErrorMessage("Please fill out all the fields.");
+      setLoading(false); // Set loading to false if validation fails
+      return;
+    }
+
     updateStudent(user)
       .then((data) => {
-        if (data && data.data && data.data.dbRes && data.data.dbRes.docs) {
-          console.log("Student updated successfully:", data.data.dbRes.docs);
-          alert(data.message);
+        setLoading(false); // Set loading to false when API call is complete
+        if (data) {
+          setSuccessMessage(data.message || "Student updated successfully.");
+          // after 2 seconds, redirect to dashboard
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 2000);
+          setErrorMessage(""); // Clear error message if update is successful
         } else {
-          console.error("Failed to update student or invalid response format.");
-          alert("Failed to update student");
+          setErrorMessage("Failed to update student. Please try again.");
         }
       })
       .catch((error) => {
+        setLoading(false); // Set loading to false in case of error
+        setErrorMessage("Error updating student. Please try again.");
         console.error("Error updating student:", error);
       });
   };
@@ -78,6 +103,22 @@ const Update = () => {
             className="flex flex-col font-semibold text-slate-700"
           >
             <h1 className="z-10 self-start -mt-1.5 text-3xl">Update Profile</h1>
+
+            {errorMessage && (
+              <div className="fixed inset-0 flex items-center justify-center z-50">
+                <AlertBox severity="error" title="Error" message={errorMessage} />
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="fixed inset-0 flex items-center justify-center z-50">
+                <AlertBox
+                  severity="success"
+                  title="Success"
+                  message={successMessage}
+                />
+              </div>
+            )}
 
             <InputField
               label="First Name"
@@ -161,8 +202,16 @@ const Update = () => {
             </div>
 
             <div className="text-center">
-              <button className="mt-4 w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-secondary transition duration-300">
-                Update Profile
+              <button
+                type="submit"
+                className={`mt-4 w-full py-2 px-4 rounded-lg transition duration-300 ${
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-primary text-white hover:bg-secondary"
+                }`}
+                disabled={loading}
+              >
+                {loading ? "Updating..." : "Update Profile"}
               </button>
             </div>
           </form>

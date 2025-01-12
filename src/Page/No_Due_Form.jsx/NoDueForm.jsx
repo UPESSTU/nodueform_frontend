@@ -1,6 +1,12 @@
 import React, { use, useEffect, useState } from "react";
 import Base from "../../Component/Base";
-import { createDocument, createDue, getUser, uploadFile } from "../../Backend/Helper";
+import {
+  createDocument,
+  createDue,
+  getUser,
+  uploadFile,
+} from "../../Backend/Helper";
+import AlertBox from "../../Component/AlertBox";
 
 const NoDueForm = () => {
   const [sapId, setSapId] = useState("");
@@ -13,6 +19,8 @@ const NoDueForm = () => {
   const [Contact, setContact] = useState("");
   const [Apaar, setApaar] = useState("");
   const [details, setDetails] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); // Track error message
+  const [successMessage, setSuccessMessage] = useState(""); // Track success message
 
   const [dues, setDues] = useState({
     libraryDue: "NO",
@@ -72,6 +80,7 @@ const NoDueForm = () => {
       })
       .catch((error) => {
         console.error("API call failed:", error);
+        setErrorMessage("Error fetching user data.");
       });
   }, []);
 
@@ -88,6 +97,7 @@ const NoDueForm = () => {
         uploadedFiles[key] = data.data.dbRes._id;
       } catch (error) {
         console.error(`Error uploading ${key}:`, error);
+        setErrorMessage(`Error uploading ${key}.`);
         return; // Optionally handle the error and stop further execution
       }
     }
@@ -102,21 +112,35 @@ const NoDueForm = () => {
       console.log("Document created successfully:", response);
     } catch (error) {
       console.error("Error creating document:", error);
+      setErrorMessage("Error creating document.");
     }
     // UPLOAD dues
 
     try {
       const response = await createDue(dues);
       console.log("Dues created successfully:", response);
+      setSuccessMessage("No Due Form submitted successfully.");
     } catch (error) {
       console.error("Error creating dues:", error);
+      setErrorMessage("Error submitting No Due Form.");
     }
-
   };
 
   return (
     <Base title="No Due Form">
       <div className="no-due-form bg-background min-h-screen p-8">
+        {errorMessage &&
+          AlertBox({
+            severity: "error",
+            title: "Error",
+            message: errorMessage,
+          })}
+        {successMessage &&
+          AlertBox({
+            severity: "success",
+            title: "Success",
+            message: successMessage,
+          })}
         <h2 className="text-2xl font-semibold text-primary mb-4">
           No Due Form
         </h2>

@@ -7,7 +7,7 @@ const Downbar = () => {
     <div className="fixed bottom-0 left-0 w-full bg-white shadow-lg border-t flex justify-around items-center py-2">
       {/* Home */}
       <Link
-        to="/"
+        to="/dashboard"
         className="flex flex-col items-center text-primary hover:text-secondary"
       >
         <FaHome size={24} />
@@ -23,11 +23,11 @@ const Downbar = () => {
       </Link>
       {/* Messages */}
       <Link
-        to="/messages"
+        to="/form"
         className="flex flex-col items-center text-primary hover:text-secondary"
       >
         <FaEnvelope size={24} />
-        <span className="text-xs mt-1">Messages</span>
+        <span className="text-xs mt-1">From</span>
       </Link>
       {/* Settings */}
       <Link

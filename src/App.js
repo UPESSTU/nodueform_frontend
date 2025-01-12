@@ -1,28 +1,46 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import React from "react";
-import LoginPage from "./Page/Login/Login";
-import Dashboard from "./Page/Dashboard/Dashboard";
-import Profile from "./Page/Profile/Profile";
-import NoDueForm from "./Page/No_Due_Form.jsx/NoDueForm";
-import StatusPage from "./Page/Status/Status";
-import Update from "./Page/Update/Update";
-import AdminDashboard from "./Admin/Dashboard/Dashboard";
-import StudentDetails from "./Admin/Students/Students";
+import React, { Suspense } from "react";
+import LoaderComponent from "./Admin/Component/Loader/Loader";
 // import Dashboard from "./pages/Dashboard"; // Example, create this page similarly
 // import ForgotPassword from "./pages/ForgotPassword"; // Example, create this page similarly
+
+const LoginPage = React.lazy(() => import("./Page/Login/Login"));
+const Dashboard = React.lazy(() => import("./Page/Dashboard/Dashboard"));
+const Profile = React.lazy(() => import("./Page/Profile/Profile"));
+const NoDueForm = React.lazy(() => import("./Page/No_Due_Form.jsx/NoDueForm"));
+const StatusPage = React.lazy(() => import("./Page/Status/Status"));
+const Update = React.lazy(() => import("./Page/Update/Update"));
+const AdminDashboard = React.lazy(() => import("./Admin/Dashboard/Dashboard"));
+const StudentDetails = React.lazy(() => import("./Admin/Students/Students"));
+
+
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/"
+            element={
+              <Suspense fallback={<LoaderComponent />}>
+                <LoginPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <Suspense fallback={<LoaderComponent />}>
+                <Dashboard />
+              </Suspense>
+            }
+          />
           <Route path="/profile" element={<Profile />} />
           <Route path="/form" element={<NoDueForm />} />
-          <Route path="/status" element={<StatusPage/>  } />
+          <Route path="/status" element={<StatusPage />} />
           <Route path="/update-profile" element={<Update />} />
-          
+
           {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
           {/* Add more routes as needed */}
 

@@ -1,4 +1,3 @@
-// pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Upes_logo from "../../assets/UPES-logo.svg";
@@ -7,26 +6,36 @@ import LoginButton from "../../Component/LoginButton";
 import { signin } from "../../Backend/Helper";
 
 const LoginPage = () => {
-  const [emailAddress, setemailAddress] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(""); // Clear previous error
     const user = { emailAddress, password };
-    console.log(user);
+
     try {
       const res = await signin(user);
-      // save the response in local storage
-      localStorage.setItem("user", JSON.stringify(res.data));
+
       if (res.status === 200) {
+        // Save the response in local storage
+        localStorage.setItem("user", JSON.stringify(res.data));
         navigate("/dashboard");
       } else {
-        console.log(res.data.error);
+        setError(res.data.error || "An unknown error occurred.");
       }
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.error || "Failed to log in. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,7 +58,7 @@ const LoginPage = () => {
             id="userId"
             placeholder="Enter Id"
             value={emailAddress}
-            onChange={(value) => setemailAddress(value)}
+            onChange={(value) => setEmailAddress(value)}
           />
 
           <LoginInput
@@ -61,7 +70,14 @@ const LoginPage = () => {
             onChange={(value) => setPassword(value)}
           />
 
-          <LoginButton />
+          {/* Render error message */}
+          {error && (
+            <div className="p-2 mt-2 text-red-500 bg-red-100 border border-red-400 rounded">
+              {error}
+            </div>
+          )}
+
+          <LoginButton disabled={loading} />
         </form>
         <div className="mt-4 text-center">
           <a href="/forgot-password" className="text-primary hover:underline">

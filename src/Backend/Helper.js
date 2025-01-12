@@ -11,7 +11,7 @@ const getToken = () => {
   if (user) {
     const parsedUser = JSON.parse(user);
     token = parsedUser.token; // Update the outer `token` variable
-    console.log("Token:", token);
+    // console.log("Token:", token);
   } else {
     console.log("User not found in localStorage");
   }
@@ -102,6 +102,21 @@ export const createDocument = async (document) => {
 export const createDue = async (due) => {
     try {
         const res = await axios.post(`${API}/due/create`, due, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        });
+        return res;
+    } catch (error) {
+        return error.response;
+    }
+}
+
+// get due
+
+export const getDue = async () => {
+    try {
+        const res = await axios.get(`${API}/due/due`, {
             headers: {
                 Authorization: `Bearer ${getToken()}`
             }
