@@ -48,10 +48,10 @@ const Base = ({ children, title }) => {
                 Home
               </Link>
               <Link
-                to="/about"
+                to="/form"
                 className="block mt-4 md:inline-block md:mt-0 md:ml-6"
               >
-                About
+                Form
               </Link>
               <Link
                 to="/contact"
