@@ -105,12 +105,16 @@ export const getFiles = async (id) => {
     
         // Make the API call with the token
         const res = await axios.get(`${API}/file/file/${id}`, {
-        headers: {
+          headers: {
             Authorization: `Bearer ${getToken()}`,
-        },
+          },
+          responseType: "blob",
         });
+        const blob =  res.data;
+        const url = URL.createObjectURL(blob);
+
     
-        return res;
+        return url;
     } catch (error) {
         console.error("Error during API call:", error.response || error.message);
         return error.response;

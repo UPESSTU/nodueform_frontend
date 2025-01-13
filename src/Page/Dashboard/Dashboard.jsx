@@ -4,6 +4,25 @@ import Base from "../../Component/Base";
 import { Link } from "react-router-dom";
 import { getDue } from "../../Backend/Helper";
 
+/**
+ * Dashboard component that displays user information and clearance status.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered Dashboard component.
+ *
+ * @example
+ * // Usage example
+ * <Dashboard />
+ *
+ * @description
+ * This component fetches user data from local storage and due status from an API.
+ * It displays the user's name, program name, and SAP ID. If there are any due statuses,
+ * it lists them with their respective remarks and statuses. If there are no due statuses,
+ * it prompts the user to fill up the no due form.
+ *
+ * @function
+ * @name Dashboard
+ */
 const Dashboard = () => {
   // get user data from local storage
   const [isdue, setIsDue] = useState(false);
@@ -21,8 +40,10 @@ const Dashboard = () => {
     getDue()
       .then((res) => {
         if (res.data) {
+
           setIsDue(true);
           setDue(res.data);
+          console.log(res.data.dbRes)
         }
       })
       .catch((err) => {
